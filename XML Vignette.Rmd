@@ -1,0 +1,49 @@
+---
+title: "XML Vignette"
+author: "Ryan McGovern and Steve Sortijas"
+date: "June 6, 2019"
+output: rmarkdown::github_document
+---
+
+
+Text describing xml format needed...
+
+Text describing data set...
+
+For this vignette we will use a dataset consisting of mortality rates and life expectancy rates at birth by race and sex in the U.S. from 1900 to 2015. This data set is publicly available from the CDC. https://data.cdc.gov/NCHS/NCHS-Death-rates-and-life-expectancy-at-birth/w9j2-ggv5  
+
+Text from CDC describing data collection methods....
+
+Age-adjusted death rates (deaths per 100,000) after 1998 are calculated based on the 2000 U.S. standard population. Populations used for computing death rates for 2011–2015 are postcensal estimates based on the 2010 census, estimated as of July 1, 2010. Rates for census years are based on populations enumerated in the corresponding censuses. Rates for noncensus years between 2000 and 2010 are revised using updated intercensal population estimates and may differ from rates previously published. Data on age-adjusted death rates prior to 1999 are taken from historical data (see References below).
+
+Life expectancy data are available up to 2014. Due to changes in categories of race used in publications, data are not available for the black population consistently before 1968, and not at all before 1960. More information on historical data on age-adjusted death rates is available at https://www.cdc.gov/nchs/nvss/mortality/hist293.htm.
+
+Packages for managing XML data
+
+In this vignette we will use the XML package for parsing and processing XML data. Another package called "xml2" is also available for managing XML and HTML data. Both packages are available in CRAN. The XML package is the better documented of the two packages and the list of functions in XML is greater than in xml2. For instance the XML package offers functions for transforming XML data to data frames and lists, whereas xml2 does not offer such functionality.
+
+However, XML does have its particularities. Thankfully, because it is well-documented, solutions are more easy to find. For instance, we use the httr package in calling the data from the CDC URL because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, simply using the URL did not result in an error.
+
+```{r}
+#Load all necessary packages
+library(XML)
+library(httr)
+
+#Create URL character string object
+url <- "https://data.cdc.gov/api/views/w9j2-ggv5/rows.xml"
+
+#Use xmlParse function (XML) with GET function (httr) to parse XML data; n.b. not using GET function results in error message indicating content is not XML
+doc <- xmlParse(GET(url))
+
+#Create object to identify root node of XML data
+root <- xmlRoot(doc)
+
+#Use xmlToDataFrame function (XML) with selected root node to create data frame; n.b. not subsetting the root node results in an error
+ds<-xmlToDataFrame(root[[1]])
+
+#All variables are character; convert variables which should be numeric
+ds[,4:5]<-sapply(ds[,4:5],as.numeric)
+
+
+
+```
