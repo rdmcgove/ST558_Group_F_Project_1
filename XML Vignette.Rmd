@@ -24,10 +24,11 @@ In this vignette we will use the XML package for parsing and processing XML data
 
 However, XML does have its particularities. Thankfully, because it is well-documented, solutions are more easy to find. For instance, we use the httr package in calling the data from the CDC URL because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, simply using the URL did not result in an error.
 
-```{r}
+```{r ImportDeathData}
 #Load all necessary packages
 library(XML)
 library(httr)
+library(tidyverse)
 
 #Create URL character string object
 url <- "https://data.cdc.gov/api/views/w9j2-ggv5/rows.xml"
@@ -44,6 +45,8 @@ ds<-xmlToDataFrame(root[[1]])
 #All variables are character; convert variables which should be numeric
 ds[,4:5]<-sapply(ds[,4:5],as.numeric)
 
+#create the variable for decade
+ds <- mutate(ds, decade=as.numeric(substr(year,1,3))*10)
 
 
 ```
