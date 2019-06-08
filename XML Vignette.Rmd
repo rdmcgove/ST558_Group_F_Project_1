@@ -47,6 +47,20 @@ ds[,4:5]<-sapply(ds[,4:5],as.numeric)
 
 #create the variable for decade
 ds <- mutate(ds, decade=as.numeric(substr(year,1,3))*10)
+```
 
+```{r AvgLifeExpByDecade Chart}
+
+#calculate the average life exp by decade and gender
+test <- ds %>% group_by(decade, sex) %>% summarise(avgAgeDecade = mean(average_life_expectancy, na.rm = TRUE))
+
+g <- ggplot(test, aes(x = decade, fill = sex, weight=avgAgeDecade))
+g + geom_bar(position = "dodge") + xlab("Decade")  +scale_fill_discrete(name = "Gender")
 
 ```
+
+
+
+
+
+
