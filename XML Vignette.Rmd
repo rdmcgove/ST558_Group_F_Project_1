@@ -49,18 +49,44 @@ ds[,4:5]<-sapply(ds[,4:5],as.numeric)
 ds <- mutate(ds, decade=as.numeric(substr(year,1,3))*10)
 ```
 
+```{r tables}
+#after making the plots i think a god chart would be the DIFFERFENCE in avg life expectancy by gender and decade
+```
+
+
 ```{r AvgLifeExpByDecade Chart}
 
 #calculate the average life exp by decade and gender
-test <- ds %>% group_by(decade, sex) %>% summarise(avgAgeDecade = mean(average_life_expectancy, na.rm = TRUE))
+chart_1_Data <- ds %>% filter(sex %in% 
+c("Female", "Male")) %>% group_by(decade, sex) %>% summarise(avgAgeDecade = mean(average_life_expectancy, na.rm = TRUE))
 
-g <- ggplot(test, aes(x = decade, fill = sex, weight=avgAgeDecade))
-g + geom_bar(position = "dodge") + xlab("Decade")  +scale_fill_discrete(name = "Gender")
+g <- ggplot(chart_1_Data, aes(x = decade, fill = sex, weight=avgAgeDecade))
+g + geom_bar(position = "dodge") + xlab("Decade") +ylab("Average Life Expectancy")+scale_fill_discrete(name = "Gender")
+
+```
+
+```{r Chart2, echo=FALSE}
+#create the scatterplot of age by year 
+chart_2_Data <- ds %>% filter(sex %in% c("Female", "Male"))
+g <- ggplot(data = chart_2_Data, aes(x = year, y = average_life_expectancy))
+g + geom_smooth(method = lm, aes(group=sex), show.legend =FALSE, col="green") +geom_point(aes(col=sex)) +  ggtitle("Average Life Expectancy by Gender and age") + xlab("Year") +ylab("Average Life Expectancy")+scale_fill_discrete(name = "Gender")
 
 ```
 
 
+```{r chart3}
+#boxplot for sepal length
+chart_3_Data <- ds %>% filter(sex %in% c("Female", "Male"))
 
+g <- ggplot(data = chart_3_Data, aes(x = race, y=average_life_expectancy))
+g + geom_boxplot() + scale_x_discrete(name = "Gender") + ggtitle("Boxplot Average Life Expectancy") + geom_point(aes(col=sex), position = 'jitter')
+```
 
+```{r chart4}
+#boxplot for sepal length
+chart_3_Data <- ds %>% filter(sex %in% c("Female", "Male"))
 
+g <- ggplot(data = chart_3_Data, aes(x = race, y=average_life_expectancy))
+g + geom_boxplot() + ggtitle("Boxplot Average Life Expectancy") + facet_wrap(~ sex)
+```
 
