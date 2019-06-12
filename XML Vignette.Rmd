@@ -165,14 +165,14 @@ chart_3_Data <- gather(data=chart_3_Data, key='decade', value='average_life_expe
 
 g <- ggplot(data = chart_3_Data, aes(x = decade, y = average_life_expectancy))
 
-g + geom_line(aes(group=Race,linetype = Race )) +  ggtitle("Difference in Average Life Expectency of Genders by Race") + ylab("Average Life Expectancy (Femle-Male)") + xlab("Decade")
+g + geom_line(aes(group=Race,linetype = Race )) +  ggtitle("Difference in Average Life Expectency of Genders by Race") + ylab("Difference in Average Life Expectancy between Genders") + xlab("Decade")
 
 ```
 
 ```{r mortalityGraphs, echo=FALSE}
 
 #Faceted scatterplot chart
-ggplot(ds, aes(x=as.numeric(year), y=mortality)) + geom_point(aes(color=race)) + facet_grid(~sex) + labs(x="Year", y="Mortality Rate (deaths per 100,000)", color="", title="Mortality Rates by Sex and Race, 1900-2015")
+ggplot(ds, aes(x=as.numeric(year), y=mortality)) + geom_point(aes(color=race)) + facet_grid(~sex) + labs(x="Decade", y="Mortality Rate (deaths per 100,000)", color="", title="Mortality Rates by Sex and Race, 1900-2015")
 
 ```
 
