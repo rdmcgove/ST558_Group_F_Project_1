@@ -10,6 +10,8 @@ Text describing xml format needed...
 
 Text describing data set...
 
+# Dataset Information
+
 For this vignette we will use a dataset consisting of mortality rates and life expectancy rates at birth by race and sex in the U.S. from 1900 to 2015. This data set is publicly available from the CDC. https://data.cdc.gov/NCHS/NCHS-Death-rates-and-life-expectancy-at-birth/w9j2-ggv5  
 
 Text from CDC describing data collection methods....
@@ -24,7 +26,7 @@ In this vignette we will use the XML package for parsing and processing XML data
 
 However, XML does have its particularities. Thankfully, because it is well-documented, solutions are more easy to find. For instance, we use the httr package in calling the data from the CDC URL because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, simply using the URL did not result in an error.
 
-```{r ImportDeathData}
+```{r ImportDeathData, include=FALSE}
 #Load all necessary packages
 library(XML)
 library(httr)
@@ -49,7 +51,11 @@ ds[,4:5]<-sapply(ds[,4:5],as.numeric)
 ds <- mutate(ds, decade=as.numeric(substr(year,1,3))*10)
 ```
 
-```{r tables}
+# Life expectancy
+
+## Average Life Expectency by Gender and Decade 
+
+```{r tables, echo=FALSE}
 #after making the plots i think a good chart would be the DIFFERFENCE in avg life expectancy by gender and decade
 
 #Average life expectancy by decade, filtered by "All races", "Female", and "Male"
@@ -67,26 +73,8 @@ avgALESexDiff[3,1] <- 'Difference'
 knitr::kable(avgALESexDiff, caption = "Average life expectancy by sex by decade")
 
 ```
-```{r getIQR_Function}
-#create the requested IQR function
-#Have your function check if the passed value is numeric and if it is appropriate for this argument (i.e. is a vector or a data frame/tibble with only one column) - if not, stop the function and return an appropriate message.
 
-getIQR <- function(vector, ...) 
-  #check that the value given is numeric and a vector
-   if (is.vector(vector) & is.numeric(vector)){
-    IQR <- quantile(vector, probs =  0.75 , names = FALSE, ...) - quantile(vector, probs =  0.25, names = FALSE, ... )  
-    return(list(IQR = IQR))
-    #if we are given a data frame we can convert this to a data vector
-   }else if (is.data.frame(vector) & is.numeric(as.numeric(vector[,1]))){
-     #since this is a data frame we will convert it to a vector
-     conv_vector <- as.numeric(vector[,1])
-    IQR <- quantile(conv_vector, probs =  0.75 , names = FALSE, ...) - quantile(conv_vector, probs =  0.25, names = FALSE, ... )  
-    return(list(IQR = IQR))
-} else {stop("Value is not numeric")}
-
-```
-
-```{r DecadeDiffRace_function, include = FALSE}
+```{r DecadeDiffRace_function, echo=FALSE}
 #this function will create the differance in life expectancy table by a supplied race
 DD_Race <- function(char_race) {
   #if we arent given a character stop the function
@@ -104,19 +92,40 @@ avgALESexDiff <- bind_rows(avgALESex,avgALESex[avgALESex$sex=="Female",2:13]-avg
 #add a value for difference
 avgALESexDiff[3,1] <- 'Difference'
 
-knitr::kable(avgALESexDiff, caption = paste('Average life expectancy by sex by decade :', char_race))
+return(avgALESexDiff)
 }
 ```
 
-```{r dd race call}
-#call the function for each race
-DD_Race('Black')
-DD_Race('White')
-DD_Race('All Races')
+## Average Life Expectency by Gender and Decade broken out by Race
+
+comments on tables below that show difference of male/female expected life by race
+
+```{r dd race call, echo=FALSE}
+#call the function for each race 
+Black <- DD_Race('Black')
+knitr::kable(Black, caption ='Average life expectancy by sex by decade: Black')
+Black[3,1] = 'Black'
+
+White <-DD_Race('White')
+knitr::kable(White, caption ='Average life expectancy by sex by decade: White')
+White[3,1] = 'White'
+
+all_races <-DD_Race('All Races')
+#commented out as this is duplicative
+#knitr::kable(all_races, caption ='Average life expectancy by sex by decade: All Races')
+all_races[3,1] = 'All Races'
+
+#create a table of the differences of gender by rate
+gender_race_spread <-rbind(Black[3,], White[3,], all_races[3,])
+attributes(gender_race_spread)$names[1] <- 'Race'
+
+#plot this as a barchart?
+knitr::kable(gender_race_spread, caption = 'Spread of Life Expectancy by Race')
+
 ```
 
 
-```{r AvgLifeExpByDecade Chart}
+```{r AvgLifeExpByDecade Chart, echo=FALSE}
 #Question about calculations: does "all races" category mean black and white combined? If so, then should we just use the "all races" data for the 2 graphs below where race is not part of the visualization?
 
 #calculate the average life exp by decade and gender
@@ -124,36 +133,43 @@ chart_1_Data <- ds %>% filter(sex %in%
 c("Female", "Male")) %>% group_by(decade, sex) %>% summarise(avgAgeDecade = mean(average_life_expectancy, na.rm = TRUE))
 
 g <- ggplot(chart_1_Data, aes(x = decade, fill = sex, weight=avgAgeDecade))
-g + geom_bar(position = "dodge") + xlab("Decade") +ylab("Average Life Expectancy")+scale_fill_discrete(name = "Gender")
+g + geom_bar(position = "dodge") + xlab("Decade") +ylab("Average Life Expectancy")+scale_fill_discrete(name = "Gender") + ggtitle("Average Life Expectancy by Decade")
 
 ```
 
-```{r Chart2, echo=FALSE}
-#create the scatterplot of age by year 
-chart_2_Data <- ds %>% filter(sex %in% c("Female", "Male"))
-g <- ggplot(data = chart_2_Data, aes(x = year, y = average_life_expectancy))
-g + geom_smooth(method = lm, aes(group=sex), show.legend =FALSE, col="green") +geom_point(aes(col=sex)) +  ggtitle("Average Life Expectancy by Gender and age") + xlab("Year") +ylab("Average Life Expectancy")+scale_fill_discrete(name = "Gender")
+```{r AvgLifeExpByDecade Chart2, echo=FALSE}
+#Question about calculations: does "all races" category mean black and white combined? If so, then should we just use the "all races" data for the 2 graphs below where race is not part of the visualization?
+
+#calculate the average life exp by decade and gender
+chart_2_Data <- ds %>% filter(sex %in% 
+c("Female", "Male")) %>% group_by(decade, sex, race) %>% summarise(avgAgeDecade = mean(average_life_expectancy, na.rm = TRUE))
+
+g <- ggplot(chart_2_Data, aes(x = decade, fill = sex, weight=avgAgeDecade))
+g + geom_bar(position = "dodge") + xlab("Decade") +ylab("Average Life Expectancy")+scale_fill_discrete(name = "Gender") + ggtitle("Average Life Expectancy by Decade and Race") + facet_grid(~race)
 
 ```
 
 
-```{r chart3}
+```{r chart3, warning=FALSE, echo=FALSE}
 #boxplot for sepal length
 chart_3_Data <- ds %>% filter(sex %in% c("Female", "Male"))
 
-g <- ggplot(data = chart_3_Data, aes(x = race, y=average_life_expectancy))
-g + geom_boxplot() + scale_x_discrete(name = "Gender") + ggtitle("Boxplot Average Life Expectancy") + geom_point(aes(col=sex), position = 'jitter')
+g <- ggplot(data = chart_3_Data, aes(x=race, y=average_life_expectancy, fill=sex))
+g + geom_boxplot() + scale_x_discrete(name = "Race") + ggtitle("Boxplot of Average Life Expectancy by Race and Gender") + ylab("Average Life Expectancy") + labs(fill = "Gender")
 ```
 
-```{r chart4}
+```{r chart4, warning = FALSE, echo=FALSE}
 #boxplot for sepal length
-chart_3_Data <- ds %>% filter(sex %in% c("Female", "Male"))
+chart_3_Data <-gender_race_spread[,1:13]
+chart_3_Data <- gather(data=chart_3_Data, key='decade', value='average_life_expectancy', '1900':'2010')
 
-g <- ggplot(data = chart_3_Data, aes(x = race, y=average_life_expectancy))
-g + geom_boxplot() + ggtitle("Boxplot Average Life Expectancy") + facet_wrap(~ sex)
+g <- ggplot(data = chart_3_Data, aes(x = decade, y = average_life_expectancy))
+
+g + geom_line(aes(group=Race,linetype = Race )) +  ggtitle("Difference in Average Life Expectency of Genders by Race") + ylab("Average Life Expectancy (Femle-Male)") + xlab("Decade")
+
 ```
 
-```{r mortalityGraphs}
+```{r mortalityGraphs, echo=FALSE}
 
 #Faceted scatterplot chart
 ggplot(ds, aes(x=as.numeric(year), y=mortality)) + geom_point(aes(color=race)) + facet_grid(~sex) + labs(x="Year", y="Mortality Rate (deaths per 100,000)", color="", title="Mortality Rates by Sex and Race, 1900-2015")
