@@ -5,27 +5,6 @@ date: "June 6, 2019"
 output: rmarkdown::github_document
 ---
 
-# Introduction
-
-## XML Data
-
-In this project we use R to process and conduct exploratory data analysis on a publicly available XML dataset. XML, or Extensible Markup Language, is an open standard markup language that is designed to carry data and to enable compatibility. Unlike HTML, it uses tags which are user-defined and new tags can be created as new data is added without redefining existing tags. XML data is highly portable because it stored in plain text, using a common standard which is not hardware or software dependent. XML is widely used in the development of document formats and industry data standards. This project uses XML data from Data.gov.
-
-## Processing XML Data in R
-
-In this vignette we will use the XML package for parsing and processing XML data. Another package called "xml2" is also available for managing XML and HTML data. Both packages are available in CRA and xml2 is part of the tidyverse. The XML package is the better documented of the two packages and the list of functions in XML is greater than in xml2. For instance the XML package offers functions for transforming XML data to data frames and lists, whereas xml2 does not offer such functionality.
-
-However, XML does have its particularities. Because it is well-documented, troubleshooting is often simpler. For instance, we use the httr package in calling the data because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, simply using the URL did not result in an error.
-
-Using the XML package we use only 3 functions: xmlParse, xmlRoot, and xmlToDataFrame. As the name would suggest, xmlParse parses XML content and generates an R object representing an XML tree. This particular function uses the internal nodes by default. xmlRoot is then used to identify the root node. By subsetting the root node in an object, we can then apply the xmlToDataSet function to transform the xml dataset to an R data frame.
-
-## Dataset Information
-
-For this vignette we will use a dataset consisting of mortality rates and life expectancy rates at birth by race and sex in the U.S. from 1900 to 2015. This data set is publicly available from the [CDC](https://data.cdc.gov/NCHS/NCHS-Death-rates-and-life-expectancy-at-birth/w9j2-ggv5).  
-
-This dataset consists of 1044 observations with 5 variables: year, race, sex, mortality, and average_life_expectancy. The dataset is in "long" form. Year, race, and sex are the groupings which contain values for mortality rates and average life expectancy rates. Year is inclusive of every year from 1900 to 2015. Race is a categorical variable consisting of: All Races, Black, and White. Although it is not explicit in CDC's description of the data, we presume that the All Races category is Black and White combined. Sex is a categorical variable consisting of: Both Sexes, Female, and Male. Mortality rate (mortality), or age-adjusted death rates is a numerical variable representing the number deaths per 100,000. The link above describes in detail how mortality rates are calculated for various historical periods. Life expectancy rate (average_life_expectancy) is a numerical variable denominated in years. Per [CDC](https://www.cdc.gov/nchs/nvss/mortality/hist293.htm.), life expectancy data are available up to 2014 and are not consistently available for the black population before 1968. The average_life_expectancy variable is the only one which contains NAs.
- 
-
 ```{r ImportDeathData, include=FALSE}
 #Load all necessary packages
 library(XML)
@@ -51,9 +30,55 @@ ds[,4:5]<-sapply(ds[,4:5],as.numeric)
 ds <- mutate(ds, decade=as.numeric(substr(year,1,3))*10)
 ```
 
+# Introduction
+
+## XML Data
+
+In this project we use R to process and conduct exploratory data analysis on a publicly available XML dataset. XML, or Extensible Markup Language, is an open standard markup language that is designed to carry data and to enable compatibility. Unlike HTML, it uses tags which are user-defined and new tags can be created as new data is added without redefining existing tags. XML data is highly portable because it stored in plain text, using a common standard which is not hardware or software dependent. XML is widely used in the development of document formats and industry data standards. This project uses XML data from Data.gov.
+
+## Processing XML Data in R
+
+In this vignette we will use the XML package for parsing and processing XML data. Another package called "xml2" is also available for managing XML and HTML data. Both packages are available in CRAN and xml2 is part of the tidyverse. The XML package is the better documented of the two packages and the list of functions in XML is greater than in xml2. For instance the XML package offers functions for transforming XML data to data frames and lists, whereas xml2 does not offer such functionality.
+
+However, XML does have its particularities. Because it is well-documented, troubleshooting is often simpler. For instance, we use the httr package in calling the data because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, simply using the URL did not result in an error.
+
+Using the XML package we use only 3 functions: xmlParse, xmlRoot, and xmlToDataFrame. As the name would suggest, xmlParse parses XML content and generates an R object representing an XML tree. This particular function uses the internal nodes by default. xmlRoot is then used to identify the root node. By subsetting the root node in an object, we can then apply the xmlToDataSet function to transform the xml dataset to an R data frame.
+
+## Dataset Information
+
+For this vignette we will use a dataset consisting of mortality rates and life expectancy rates at birth by race and sex in the U.S. from 1900 to 2015. This data set is publicly available from the [CDC](https://data.cdc.gov/NCHS/NCHS-Death-rates-and-life-expectancy-at-birth/w9j2-ggv5).  
+
+This dataset consists of 1044 observations with 5 variables: year, race, sex, mortality, and average_life_expectancy. The dataset is in "long" form. Year, race, and sex are the groupings which contain values for mortality rates and average life expectancy rates. Year is inclusive of every year from 1900 to 2015. Race is a categorical variable consisting of: All Races, Black, and White. Although it is not explicit in CDC's description of the data, we presume that the All Races category is Black and White combined. Sex is a categorical variable consisting of: Both Sexes, Female, and Male. Mortality rate (mortality), or age-adjusted death rates is a numerical variable representing the number deaths per 100,000. The link above describes in detail how mortality rates are calculated for various historical periods. Life expectancy rate (average_life_expectancy) is a numerical variable denominated in years. Per [CDC](https://www.cdc.gov/nchs/nvss/mortality/hist293.htm.), life expectancy data are available up to 2014 and are not consistently available for the black population before 1968. The average_life_expectancy variable is the only one which contains NAs.
+
+The first contingency table below displays the number of observations for each numerical variable grouped by the race and sex. This shows that for average life expectancy, each group is missing one observation. The second contingency table confirms that the missing data is for 2015.
+
+```{r contingency tables}
+
+#Add 2 variables to check for the presence of NA values for the numerical variables
+ds <- ds %>% mutate(mortality_yn = ifelse(is.na(mortality),0,1), ale_yn = ifelse(is.na(average_life_expectancy),0,1))
+
+#Create contingency table based counting the number of non-NA values for race and sex groupings
+table1 <- ds2 %>% filter(mortality_yn == 1 | ale_yn == 1) %>% group_by(race, sex) %>% summarise(mortN = sum(mortality_yn), aleN = sum(ale_yn))
+
+#Create contingency table showing the year with the NA values
+table2 <- ds2 %>% filter(ale_yn == 0) %>% group_by(year) %>% summarise(mortN = sum(mortality_yn), aleN = sum(ale_yn))
+
+#Display tables, change column names
+knitr::kable(table1, col.names = c("Race", "Sex", "Mortality (n)","Life Expectancy (n)"), caption = "Count of Mortality and Life Expectancy observations by Group")
+
+knitr::kable(table2, col.names = c("Year","Mortality (n)","Life Expectancy (n)"), caption = "Count of Mortality and Life Expectancy observations by Year")
+
+```
+
+
+
 # Life expectancy
 
 ## Average Life Expectency by Gender and Decade 
+
+First we will explore the average life expectancy data. To help simplify our analysis, we will create a new variable called "decade" in order to group the years into their respective decades. We will then use this grouping to compare change in the numerical variables over time. 
+
+As discussed previously, we interpret the categorical value of "All Races" in the "race" variable to mean "black" and "white" combined. So for this first table, we will use only the "All Races" observations to show the average life expectancy rates by decade. This table is grouped by sex to highlight the different life expectancy rates between sexes. The bottommost row of the table summarizes the differences in life expectancy rates between male and female during each decade.
 
 ```{r tables, echo=FALSE}
 #after making the plots i think a good chart would be the DIFFERFENCE in avg life expectancy by gender and decade
@@ -70,9 +95,12 @@ avgALESexDiff <- bind_rows(avgALESex,avgALESex[avgALESex$sex=="Female",2:13]-avg
 #add a value for difference
 avgALESexDiff[3,1] <- 'Difference'
 
-knitr::kable(avgALESexDiff, caption = "Average life expectancy by sex by decade")
+knitr::kable(avgALESexDiff, caption = "Average life expectancy by sex by decade", col.names = c("","1900","1910","1920","1930","1940","1950","1960","1970","1980","1990","2000","2010"))
 
 ```
+
+The average life expectancy trends upwards over time for both females and males for every decade. Females have a higher average life expectancy compared with males for every decade. From 1900 to 1970, the gap in life expectancy between the two groups more than doubles, with the peak gap in the 1970s (7.7 years difference). After 1970, The life expectancy gap between the two sexes then trends downward. In the tables below, we will explore the life expectancy data by race.
+
 
 ```{r DecadeDiffRace_function, echo=FALSE}
 #this function will create the differance in life expectancy table by a supplied race
@@ -98,7 +126,7 @@ return(avgALESexDiff)
 
 ## Average Life Expectency by Gender and Decade broken out by Race
 
-comments on tables below that show difference of male/female expected life by race
+When analyzed by race, the life expectancy trends seen above hold true: the life expectancy gap between females and males grows from 1900 to 1970 and then begins decreasing. What is noticeable in this analysis is the gap in life expectancy between black and white populations, particularly in the early 1900s. The average life expectancy is greater than 15 years for whites (both male and female) compared with blacks. However, over the years life expectancy gap between blacks and whites narrows considerably. In 2010 the life expectancy gap between races is reduced to nearly 4 years for both sexes. (Let's use the last table to summarize the differences by race)
 
 ```{r dd race call, echo=FALSE}
 #call the function for each race 
