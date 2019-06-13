@@ -5,26 +5,26 @@ date: "June 6, 2019"
 output: rmarkdown::github_document
 ---
 
+# Introduction
 
-Text describing xml format needed...
+## XML Data
 
-Text describing data set...
+In this project we use R to process and conduct exploratory data analysis on a publicly available XML dataset. XML, or Extensible Markup Language, is an open standard markup language that is designed to carry data and to enable compatibility. Unlike HTML, it uses tags which are user-defined and new tags can be created as new data is added without redefining existing tags. XML data is highly portable because it stored in plain text, using a common standard which is not hardware or software dependent. XML is widely used in the development of document formats and industry data standards. This project uses XML data from Data.gov.
 
-# Dataset Information
+## Processing XML Data in R
 
-For this vignette we will use a dataset consisting of mortality rates and life expectancy rates at birth by race and sex in the U.S. from 1900 to 2015. This data set is publicly available from the CDC. https://data.cdc.gov/NCHS/NCHS-Death-rates-and-life-expectancy-at-birth/w9j2-ggv5  
+In this vignette we will use the XML package for parsing and processing XML data. Another package called "xml2" is also available for managing XML and HTML data. Both packages are available in CRA and xml2 is part of the tidyverse. The XML package is the better documented of the two packages and the list of functions in XML is greater than in xml2. For instance the XML package offers functions for transforming XML data to data frames and lists, whereas xml2 does not offer such functionality.
 
-Text from CDC describing data collection methods....
+However, XML does have its particularities. Because it is well-documented, troubleshooting is often simpler. For instance, we use the httr package in calling the data because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, simply using the URL did not result in an error.
 
-Age-adjusted death rates (deaths per 100,000) after 1998 are calculated based on the 2000 U.S. standard population. Populations used for computing death rates for 2011–2015 are postcensal estimates based on the 2010 census, estimated as of July 1, 2010. Rates for census years are based on populations enumerated in the corresponding censuses. Rates for noncensus years between 2000 and 2010 are revised using updated intercensal population estimates and may differ from rates previously published. Data on age-adjusted death rates prior to 1999 are taken from historical data (see References below).
+Using the XML package we use only 3 functions: xmlParse, xmlRoot, and xmlToDataFrame. As the name would suggest, xmlParse parses XML content and generates an R object representing an XML tree. This particular function uses the internal nodes by default. xmlRoot is then used to identify the root node. By subsetting the root node in an object, we can then apply the xmlToDataSet function to transform the xml dataset to an R data frame.
 
-Life expectancy data are available up to 2014. Due to changes in categories of race used in publications, data are not available for the black population consistently before 1968, and not at all before 1960. More information on historical data on age-adjusted death rates is available at https://www.cdc.gov/nchs/nvss/mortality/hist293.htm.
+## Dataset Information
 
-Packages for managing XML data
+For this vignette we will use a dataset consisting of mortality rates and life expectancy rates at birth by race and sex in the U.S. from 1900 to 2015. This data set is publicly available from the [CDC](https://data.cdc.gov/NCHS/NCHS-Death-rates-and-life-expectancy-at-birth/w9j2-ggv5).  
 
-In this vignette we will use the XML package for parsing and processing XML data. Another package called "xml2" is also available for managing XML and HTML data. Both packages are available in CRAN. The XML package is the better documented of the two packages and the list of functions in XML is greater than in xml2. For instance the XML package offers functions for transforming XML data to data frames and lists, whereas xml2 does not offer such functionality.
-
-However, XML does have its particularities. Thankfully, because it is well-documented, solutions are more easy to find. For instance, we use the httr package in calling the data from the CDC URL because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, simply using the URL did not result in an error.
+This dataset consists of 1044 observations with 5 variables: year, race, sex, mortality, and average_life_expectancy. The dataset is in "long" form. Year, race, and sex are the groupings which contain values for mortality rates and average life expectancy rates. Year is inclusive of every year from 1900 to 2015. Race is a categorical variable consisting of: All Races, Black, and White. Although it is not explicit in CDC's description of the data, we presume that the All Races category is Black and White combined. Sex is a categorical variable consisting of: Both Sexes, Female, and Male. Mortality rate (mortality), or age-adjusted death rates is a numerical variable representing the number deaths per 100,000. The link above describes in detail how mortality rates are calculated for various historical periods. Life expectancy rate (average_life_expectancy) is a numerical variable denominated in years. Per [CDC](https://www.cdc.gov/nchs/nvss/mortality/hist293.htm.), life expectancy data are available up to 2014 and are not consistently available for the black population before 1968. The average_life_expectancy variable is the only one which contains NAs.
+ 
 
 ```{r ImportDeathData, include=FALSE}
 #Load all necessary packages
