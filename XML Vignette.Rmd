@@ -34,13 +34,13 @@ ds <- mutate(ds, decade=as.numeric(substr(year,1,3))*10)
 
 ## XML Data
 
-In this project we use R to process and conduct exploratory data analysis on a publicly available XML dataset. XML, or Extensible Markup Language, is an open standard markup language that is designed to carry data and to enable compatibility. Unlike HTML, it uses tags which are user-defined and new tags can be created as new data is added without redefining existing tags. XML data is highly portable because it stored in plain text, using a common standard which is not hardware or software dependent. XML is widely used in the development of document formats and industry data standards. This project uses XML data from Data.gov.
+In this project we use R to process and conduct exploratory data analysis on a publicly available XML dataset. XML, or Extensible Markup Language, is an open standard markup language that is designed to carry data and to enable compatibility. Unlike HTML, it uses tags which are user-defined and new tags can be created as new data is added without redefining existing tags. XML data is highly portable because it is stored in plain text, using a common standard which is not hardware or software dependent. XML is widely used in the development of document formats and industry data standards. This project uses XML data from Data.gov.
 
 ## Processing XML Data in R
 
-In this vignette we will use the XML package for parsing and processing XML data. Another package called "xml2" is also available for managing XML and HTML data. Both packages are available in CRAN and xml2 is part of the tidyverse. The XML package is the better documented of the two packages and the list of functions in XML is greater than in xml2. For instance the XML package offers functions for transforming XML data to data frames and lists, whereas xml2 does not offer such functionality.
+In this vignette we will use the "XML" package for parsing and processing XML data. Another package called "xml2" is also available for managing XML and HTML data. Both packages are available in CRAN and xml2 is part of the tidyverse. The XML package is the better documented of the two packages and the list of functions in XML surpasses those than in xml2. For instance the XML package offers functions for transforming XML data to data frames and lists, whereas xml2 does not offer such functionality.
 
-However, XML does have its particularities. Because it is well-documented, troubleshooting is often simpler. For instance, we use the httr package in calling the data because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, simply using the URL did not result in an error.
+However, XML does have its particularities. Because it is well-documented, troubleshooting is often simpler. For instance, we use the httr package in calling the data because simply using the URL alone for this particular function resulted in an error. Whereas, for the xml2 package, using the URL alone did not result in an error.
 
 Using the XML package we use only 3 functions: xmlParse, xmlRoot, and xmlToDataFrame. As the name would suggest, xmlParse parses XML content and generates an R object representing an XML tree. This particular function uses the internal nodes by default. xmlRoot is then used to identify the root node. By subsetting the root node in an object, we can then apply the xmlToDataSet function to transform the xml dataset to an R data frame.
 
@@ -55,7 +55,7 @@ The first contingency table below displays the number of observations for each n
 ```{r contingency tables}
 
 #Add 2 variables to check for the presence of NA values for the numerical variables
-ds <- ds %>% mutate(mortality_yn = ifelse(is.na(mortality),0,1), ale_yn = ifelse(is.na(average_life_expectancy),0,1))
+ds2 <- ds %>% mutate(mortality_yn = ifelse(is.na(mortality),0,1), ale_yn = ifelse(is.na(average_life_expectancy),0,1))
 
 #Create contingency table based counting the number of non-NA values for race and sex groupings
 table1 <- ds2 %>% filter(mortality_yn == 1 | ale_yn == 1) %>% group_by(race, sex) %>% summarise(mortN = sum(mortality_yn), aleN = sum(ale_yn))
@@ -99,7 +99,7 @@ knitr::kable(avgALESexDiff, caption = "Average life expectancy by sex by decade"
 
 ```
 
-The average life expectancy trends upwards over time for both females and males for every decade. Females have a higher average life expectancy compared with males for every decade. From 1900 to 1970, the gap in life expectancy between the two groups more than doubles, with the peak gap in the 1970s (7.7 years difference). After 1970, The life expectancy gap between the two sexes then trends downward. In the tables below, we will explore the life expectancy data by race.
+The average life expectancy trends upwards over time for both females and males for every decade. Females have a higher average life expectancy compared with males for every decade. From 1900 to 1970, the gap in life expectancy between the two groups more than doubles, with the peak difference in the 1970s (7.7 years difference). After 1970, The life expectancy gap between the two sexes then trends downward. In the tables below, we will explore the life expectancy data by race.
 
 
 ```{r DecadeDiffRace_function, echo=FALSE}
@@ -152,6 +152,9 @@ knitr::kable(gender_race_spread, caption = 'Spread of Life Expectancy by Race')
 
 ```
 
+### Visuals
+
+The first plot looks at average life expectancy by sex for each decade of the dataset. This grouped bar graph demonstrates the trend towards higher life expectancy for both sexes as well as the persistent gap between male and female life expectancy, which widens and appears to currently be in a narrowing phase.
 
 ```{r AvgLifeExpByDecade Chart, echo=FALSE}
 #Question about calculations: does "all races" category mean black and white combined? If so, then should we just use the "all races" data for the 2 graphs below where race is not part of the visualization?
@@ -165,6 +168,8 @@ g + geom_bar(position = "dodge") + xlab("Decade") +ylab("Average Life Expectancy
 
 ```
 
+When stratified by race, the faceted bar graph below helps to see how life expectancy for black men and women have narrowed the a wide gap in life expectancy compared with white males and females since 1900. It also shows how the life expectancy gap between  males and females has, in recent history, been larger for the black population compared with whites.
+
 ```{r AvgLifeExpByDecade Chart2, echo=FALSE}
 #Question about calculations: does "all races" category mean black and white combined? If so, then should we just use the "all races" data for the 2 graphs below where race is not part of the visualization?
 
@@ -177,6 +182,7 @@ g + geom_bar(position = "dodge") + xlab("Decade") +ylab("Average Life Expectancy
 
 ```
 
+The boxplot below summarizes the life expectancy data by race and sex for all years of the dataset. In other words, each box represents the distribution of life expectancy for the 115 values for each race-sex grouping. One observation here is that, although as a whole, females have higher life expectancy than males, the median life expectancy for white males is similar to the median life expectancy for black females. Also, the "All Races" life expectancy boxplots largely mirror the boxplots for whites, which potentially shows how heavily weighted the white population factors in the All Races data.
 
 ```{r chart3, warning=FALSE, echo=FALSE}
 #boxplot for sepal length
@@ -185,6 +191,8 @@ chart_3_Data <- ds %>% filter(sex %in% c("Female", "Male"))
 g <- ggplot(data = chart_3_Data, aes(x=race, y=average_life_expectancy, fill=sex))
 g + geom_boxplot() + scale_x_discrete(name = "Race") + ggtitle("Boxplot of Average Life Expectancy by Race and Gender") + ylab("Average Life Expectancy") + labs(fill = "Gender")
 ```
+
+The line graph below tracks the difference in average life expectancy between males and females over time stratified by race. For all racial categories, this difference remains relatively small closer to the early part of this dataset. The life expectancy difference then grows considerably until the 1970s with a current downward trend since that point.
 
 ```{r chart4, warning = FALSE, echo=FALSE}
 #boxplot for sepal length
@@ -197,10 +205,14 @@ g + geom_line(aes(group=Race,linetype = Race )) +  ggtitle("Difference in Averag
 
 ```
 
+# Mortality rates
+
+Similar to the upward trend in average life expectancy rates, the mortality rates for males and females in all racial categories has considerably decreased over time. As you can see from the faceted scatterplot below, mortality rates for blacks were considerably higher than whites from 1900 to the 1930s. Since the 1940s, although mortality rates for blacks of both sexes remained persistently higher than for whites, the difference is considerably less.   
+
 ```{r mortalityGraphs, echo=FALSE}
 
 #Faceted scatterplot chart
-ggplot(ds, aes(x=as.numeric(year), y=mortality)) + geom_point(aes(color=race)) + facet_grid(~sex) + labs(x="Decade", y="Mortality Rate (deaths per 100,000)", color="", title="Mortality Rates by Sex and Race, 1900-2015")
+ggplot(ds, aes(x=as.numeric(year), y=mortality)) + geom_point(aes(color=race)) + facet_grid(~sex) + labs(x="Decade", y="Mortality Rate (deaths per 100,000)", color="", title="Mortality Rates by Sex and Race, 1900-2015") + scale_x_continuous(breaks = c(1900,1940,1980,2020))
 
 ```
 
