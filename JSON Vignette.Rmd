@@ -1,0 +1,169 @@
+---
+title: "JSON Vignette"
+author: "Greg Janesch & Hongliang Liu"
+date: "June 14, 2019"
+output:
+    html_document:
+        toc: yes
+        toc_float: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction to JSON
+
+JSON (JavaScript Object Notation) is a plain-text data file format.  It was originally intended for use with JavaScript, as the full name implies, as it's structured to store attribute-value pairs.  As a result, it can be used to store data records containing nested and potentially complicated item fields.
+
+An example from the data we'll be using later:
+
+````
+[
+  {
+    "Engine Information": {
+      "Transmission": "6 Speed Automatic Select Shift", 
+      "Engine Type": "Audi 3.2L 6 cylinder 250hp 236ft-lbs", 
+      "Engine Statistics": {
+        "Horsepower": 250, 
+        "Torque": 236
+      }, 
+      "Hybrid": false, 
+      "Number of Forward Gears": 6, 
+      "Driveline": "All-wheel drive"
+    }, 
+    "Identification": {
+      "Make": "Audi", 
+      "Model Year": "2009 Audi A3", 
+      "ID": "2009 Audi A3 3.2", 
+      "Classification": "Automatic transmission", 
+      "Year": 2009
+    }, 
+    "Dimensions": {
+      "Width": 202, 
+      "Length": 143, 
+      "Height": 140
+    }, 
+    "Fuel Information": {
+      "Highway mpg": 25, 
+      "City mph": 18, 
+      "Fuel Type": "Gasoline"
+    }
+  },...
+````
+
+The individual record is denoted by the outermost pair of curly braces.  Within that are the four data objects for this record ("Engine Information", "Identification", "Dimensions", and "Fuel Information"), each of which comes with multiple subfields.  Numeric, string, boolean, and array values can be stored in JSON objects.  A fuller description of the syntax can be found [here](https://www.ecma-international.org/publications/standards/Ecma-404.htm).
+
+# JSON Packages
+As one would expect with a popular file format, multiple methods exist for reading JSON into R.  The `rjson` library is a very minimal package which doesn't have any functionality beyond reading JSON data into R (it won't even convert the contents to a data frame by itself).  `RJSONIO` and `jsonlite` are more elaborate packages, intended to be used with some web technologies according to their descriptions.  For this vignette, we'll use `jsonlite` for reasons that will be noted shortly (CRAN page and documentation [here](https://cran.r-project.org/web/packages/jsonlite/index.html)).
+
+
+# The Data
+The dataset used is taken from the [CORGIS (Collection of Really Great, Interesting, Situated Datasets) project](https://think.cs.vt.edu/corgis/), a collection of moderately sized datasets intended for experimentation and learning how to handle data operations.
+
+The specific dataset can be found [here](https://think.cs.vt.edu/corgis/json/cars/cars.html).
+
+# Reading A File
+Reading in a file is fairly simple:
+```{r}
+library(tidyverse)
+library(jsonlite)
+json_data <- fromJSON("https://think.cs.vt.edu/corgis/json/cars/cars.json")
+class(json_data)
+```
+
+The function name is actually the same for all three packages mentioned before.  However, the `rjson` and `RJSONIO` functions return a nested list, which would require some extra processing, so we stick with this for simplicity's sake.
+
+So this function apparently returns a data frame.  However, if you try to look at the columns:
+
+```{r}
+# try to get the class of each column, but...
+sapply(json_data, class)
+```
+
+The actual object is actually a collection of data frames.  This is where the `flatten()` function in `jsonlite` comes in:
+```{r}
+# also convert to a tibble to make printing neater
+actual_df <- tbl_df(jsonlite::flatten(json_data))
+actual_df
+```
+This returns a data frame that can be handled conventionally by R functions.
+
+
+# Exploratory Analysis
+It should be noted that there are some peculiarities in the data.  For instance, documentation does not give units for the dimensions, and they don't all seem to be on the same scale:
+```{r}
+actual_df$Volume = actual_df$Dimensions.Height * actual_df$Dimensions.Length * 
+    actual_df$Dimensions.Width
+qplot(actual_df$Volume, geom="histogram", xlab = "Volume", binwidth=10e4)
+```
+
+In fact, if we look at the min and max volumes calculated this way:
+
+```{r}
+c(min(actual_df$Volume), max(actual_df$Volume))
+```
+
+It's different by a factor of nearly 10,000, which suggests an issue with that part of the data.  Much of it looks reasonable, however, and this analysis will look more at variables that seem to be reasonably-valued.
+
+First, a look at torque versus highway MPG:
+```{r}
+p <- ggplot(data = actual_df)
+
+# highway mpg vs torque, colored by fuel type - limits are because of one outlier
+# which claims 200+ mpg highway
+p + geom_point(aes(x=`Fuel Information.Highway mpg`, y=`Engine Information.Engine Statistics.Torque`,
+                   color=`Fuel Information.Fuel Type`), alpha = 0.5) + xlim(0,50) +
+    xlab("Highway MPG") + ylab("Torque")
+```
+
+There are a couple of rough trends that can be pulled out.  The biggest is probably the boost in higheay MPG as the torque levels fall - the highest amounts of torque correspond to under 20 MPG while the lowest torque levels are more around 35 MPG.  The other is that the cars configured to run on E85 (an 85% ethanol fuel blend) have somewhat worse mileage than their gasoline counterparts.  Breaking this down on just fuel type versus year:
+
+```{r}
+knitr::kable(table(actual_df$`Fuel Information.Fuel Type`, actual_df$`Identification.Year`))
+```
+
+As you'd expect from the previous plot, the models were dominated by pure-gasoline engines, with a decently large number of E85 models as well.  There are a few diesel and even a pair of compressed natural gas models (the two of these are the 2010 and 2011 Honda Civic).
+
+Looking at the breakdown of hybrid vs non-hybrid mileage (this being the start of the 2010s, electric cars aren't around), the highway mileage isn't particularly different:
+```{r}
+p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.Highway mpg`)) + 
+    ylim(0,50) + xlab("Hybrid") + ylab("Highway MPG")
+```
+
+However, hybrid vehicles generally have better mileage at city speeds; looking at those mileages:
+
+```{r}
+# I'm pretty sure "City mph" is a typo, especially given that it's under "Fuel Information"
+p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.City mph`)) + 
+    ylim(0,50) + xlab("Hybrid") + ylab("City MPG")
+```
+
+The median for the city mileage is quite a bit better than the one for the non-hybrid vehicle.
+
+Finally, looking at manual vs automatic transmissions each year:
+
+```{r}
+# count of transmission types per year
+p + geom_bar(aes(x=`Identification.Year`, fill=as.factor(`Identification.Classification`)),
+             stat="count", position="dodge") +
+    guides(fill=guide_legend(title="Transmission")) + xlab("Year")
+```
+
+They seem similar proportionally, although it's hard to tell in the 2009 case since that data looks incomplete.
+
+```{r}
+numeric_summary <- function(df, transmission = "Manual transmission"){
+    is_transmission_type <- transmission == df %>% select(Identification.Classification)
+    vec <- df[is_transmission_type,]$`Engine Information.Engine Statistics.Horsepower`
+    return(c(quantile(vec,c(0,0.25,0.5)), mean(vec), quantile(vec,c(0.75,1)), length(vec)))
+}
+
+hp_by_tm <- cbind(numeric_summary(actual_df, "Manual transmission"),
+                  numeric_summary(actual_df, "Automatic transmission"))
+
+knitr::kable(as.data.frame(hp_by_tm, row.names = c("Min","25%","50%","Mean","75%","Max", "Count")),
+             col.names=c("Manual","Automatic"))
+```
+
+It looks like the automatic transmissions tend to have somewhat more horsepower than the manual ones.
