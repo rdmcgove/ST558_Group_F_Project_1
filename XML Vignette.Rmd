@@ -58,10 +58,10 @@ The first contingency table below displays the number of observations for each n
 ds <- ds %>% mutate(mortality_yn = ifelse(is.na(mortality),0,1), ale_yn = ifelse(is.na(average_life_expectancy),0,1))
 
 #Create contingency table based counting the number of non-NA values for race and sex groupings
-table1 <- ds2 %>% filter(mortality_yn == 1 | ale_yn == 1) %>% group_by(race, sex) %>% summarise(mortN = sum(mortality_yn), aleN = sum(ale_yn))
+table1 <- ds %>% filter(mortality_yn == 1 | ale_yn == 1) %>% group_by(race, sex) %>% summarise(mortN = sum(mortality_yn), aleN = sum(ale_yn))
 
 #Create contingency table showing the year with the NA values
-table2 <- ds2 %>% filter(ale_yn == 0) %>% group_by(year) %>% summarise(mortN = sum(mortality_yn), aleN = sum(ale_yn))
+table2 <- ds %>% filter(ale_yn == 0) %>% group_by(year) %>% summarise(mortN = sum(mortality_yn), aleN = sum(ale_yn))
 
 #Display tables, change column names
 knitr::kable(table1, col.names = c("Race", "Sex", "Mortality (n)","Life Expectancy (n)"), caption = "Count of Mortality and Life Expectancy observations by Group")
