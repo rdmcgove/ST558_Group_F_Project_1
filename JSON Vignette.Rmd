@@ -81,12 +81,13 @@ Two other packages `RJSONIO` and `jsonlite` were introduced to R community since
    
 For this vignette, we'll use `jsonlite` for the above comparison. More usage about `jsonlite` could be found at the CRAN page and documentation [here](https://cran.r-project.org/web/packages/jsonlite/index.html)).
 
-# The Data
+# Working with JSON data in R
+## The Data
 The dataset used is taken from the [CORGIS (Collection of Really Great, Interesting, Situated Datasets) project](https://think.cs.vt.edu/corgis/), a collection of moderately sized datasets intended for experimentation and learning how to handle data operations. It is about cars and how much fuel they use. Four types of information were included: "Engine Information", "Identification", "Dimensions", "Fuel Information".
 
 The specific dataset can be found [here](https://think.cs.vt.edu/corgis/json/cars/cars.html).
 
-# Reading A File
+## Reading online JSON File
 Reading in a file is fairly simple:
 ```{r parse, warning=FALSE,message=FALSE}
 library(tidyverse)
@@ -113,7 +114,7 @@ actual_df
 This returns a data frame that can be handled conventionally by R functions.
 
 
-# Exploratory Analysis
+## Exploratory Analysis
 It should be noted that there are some peculiarities in the data.  For instance, documentation does not give units for the dimensions, and they don't all seem to be on the same scale:
 ```{r new_variable, warning=FALSE,message=FALSE}
 actual_df$Volume = actual_df$Dimensions.Height * actual_df$Dimensions.Length * 
