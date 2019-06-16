@@ -163,7 +163,12 @@ hp_by_tm <- cbind(numeric_summary(actual_df, "Manual transmission"),
                   numeric_summary(actual_df, "Automatic transmission"))
 
 knitr::kable(as.data.frame(hp_by_tm, row.names = c("Min","25%","50%","Mean","75%","Max", "Count")),
-             col.names=c("Manual","Automatic"))
+             col.names=c("Manual","Automatic"), digits = 0) #Added digits argument to remove decimals
 ```
 
-It looks like the automatic transmissions tend to have somewhat more horsepower than the manual ones.
+It looks like the automatic transmissions tend to have somewhat more horsepower than the manual ones. Since manual transmissions tend to get better city MPG compared with automatics, this may also demonstrate that automatics generally have higher horsepower than manual cars.
+
+```{r}
+p + geom_boxplot(aes(x=`Identification.Classification`, y=`Fuel Information.City mph`)) + ylim(0,50) + labs(x = "Transmission Type", y = "City MPG")
+```
+
