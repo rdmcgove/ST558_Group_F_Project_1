@@ -32,10 +32,9 @@ a boolean
 null    
 
 JSON values cannot be one of the following data types:    
-   
 a function   
 a date  
-undefined      [[Ref](https://www.w3schools.com/js/js_json_datatypes.asp)] 
+undefined      [[Ref](https://www.w3schools.com/js/js_json_datatypes.asp)]     
 An example from the data we'll be using later:
 
 ````
@@ -138,7 +137,9 @@ p <- ggplot(data = actual_df)
 # which claims 200+ mpg highway
 p + geom_point(aes(x=`Fuel Information.Highway mpg`, y=`Engine Information.Engine Statistics.Torque`,
                    color=`Fuel Information.Fuel Type`), alpha = 0.5) + xlim(0,50) +
-    xlab("Highway MPG") + ylab("Torque")
+    xlab("Highway MPG") + ylab("Torque") +
+  labs(caption="Scatter plot between engine torque and highway mpg") +
+  theme(plot.caption = element_text(size = 12, face = "bold")) 
 ```
 
 There are a couple of rough trends that can be pulled out.  The biggest is probably the boost in higheay MPG as the torque levels fall - the highest amounts of torque correspond to under 20 MPG while the lowest torque levels are more around 35 MPG.  The other is that the cars configured to run on E85 (an 85% ethanol fuel blend) have somewhat worse mileage than their gasoline counterparts.  Breaking this down on just fuel type versus year:
@@ -152,7 +153,10 @@ As you'd expect from the previous plot, the models were dominated by pure-gasoli
 Looking at the breakdown of hybrid vs non-hybrid mileage (this being the start of the 2010s, electric cars aren't around), the highway mileage isn't particularly different:
 ```{r highway_mpg, warning=FALSE,message=FALSE}
 p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.Highway mpg`)) + 
-    ylim(0,50) + xlab("Hybrid") + ylab("Highway MPG")
+    ylim(0,50) + xlab("Engine type") + ylab("Highway MPG") +
+  labs(title="Boxplot of Highway mpg by Engine type (Hybrid vs. Non-Hybrid") +
+  theme(plot.title = element_text(size = 12, face = "bold")) + 
+  scale_x_discrete(labels = c("Non-hybrid","Hybrid"))
 ```
 
 However, hybrid vehicles generally have better mileage at city speeds; looking at those mileages:
@@ -160,7 +164,10 @@ However, hybrid vehicles generally have better mileage at city speeds; looking a
 ```{r city_mpg, warning=FALSE,message=FALSE}
 # I'm pretty sure "City mph" is a typo, especially given that it's under "Fuel Information"
 p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.City mph`)) + 
-    ylim(0,50) + xlab("Hybrid") + ylab("City MPG")
+   ylim(0,50) + xlab("Hybrid") + ylab("City MPG") + 
+  labs(title="Boxplot of City mpg by Engine type (Hybrid vs. Non-Hybrid") +
+  theme(plot.title = element_text(size = 12, face = "bold")) + 
+  scale_x_discrete(labels = c("Non-hybrid","Hybrid"))
 ```
 
 The median for the city mileage is quite a bit better than the one for the non-hybrid vehicle.
@@ -171,7 +178,8 @@ Finally, looking at manual vs automatic transmissions each year:
 # count of transmission types per year
 p + geom_bar(aes(x=`Identification.Year`, fill=as.factor(`Identification.Classification`)),
              stat="count", position="dodge") +
-    guides(fill=guide_legend(title="Transmission")) + xlab("Year")
+    guides(fill=guide_legend(title="Transmission")) + xlab("Year")  + labs(caption="Distribution of transmission type by years") +
+  theme(plot.caption = element_text(size = 12, face = "bold")) 
 ```
 
 They seem similar proportionally, although it's hard to tell in the 2009 case since that data looks incomplete.
@@ -187,7 +195,7 @@ hp_by_tm <- cbind(numeric_summary(actual_df, "Manual transmission"),
                   numeric_summary(actual_df, "Automatic transmission"))
 
 knitr::kable(as.data.frame(hp_by_tm, row.names = c("Min","25%","50%","Mean","75%","Max", "Count")),
-             col.names=c("Manual","Automatic"))
+             col.names=c("Manual","Automatic"), caption = "Summry of horsepower by different transmissions")
 ```
 
 It looks like the automatic transmissions tend to have somewhat more horsepower than the manual ones.
