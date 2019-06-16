@@ -88,7 +88,7 @@ The specific dataset can be found [here](https://think.cs.vt.edu/corgis/json/car
 
 # Reading A File
 Reading in a file is fairly simple:
-```{r}
+```{r parse, warning=FALSE,message=FALSE}
 library(tidyverse)
 library(jsonlite)
 json_data <- fromJSON("https://think.cs.vt.edu/corgis/json/cars/cars.json")
@@ -99,13 +99,13 @@ The function name is actually the same for all three packages mentioned before. 
 
 So this function apparently returns a data frame.  However, if you try to look at the columns:
 
-```{r}
+```{r calss, warning=FALSE,message=FALSE}
 # try to get the class of each column, but...
 sapply(json_data, class)
 ```
 
-The actual object is actually a collection of data frames.  This is where the `flatten()` function in `jsonlite` comes in:
-```{r}
+The actual object is actually a collection of data frames (which was also called "nested data frame"").  We need to conver such a "nested data frame"" into a regular 2-dimensional regular dataframe. This is where the `flatten()` function in `jsonlite` comes in:
+```{r faltten,warning=FALSE,message=FALSE}
 # also convert to a tibble to make printing neater
 actual_df <- tbl_df(jsonlite::flatten(json_data))
 actual_df
@@ -115,7 +115,7 @@ This returns a data frame that can be handled conventionally by R functions.
 
 # Exploratory Analysis
 It should be noted that there are some peculiarities in the data.  For instance, documentation does not give units for the dimensions, and they don't all seem to be on the same scale:
-```{r}
+```{r new_variable, warning=FALSE,message=FALSE}
 actual_df$Volume = actual_df$Dimensions.Height * actual_df$Dimensions.Length * 
     actual_df$Dimensions.Width
 qplot(actual_df$Volume, geom="histogram", xlab = "Volume", binwidth=10e4)
@@ -123,14 +123,14 @@ qplot(actual_df$Volume, geom="histogram", xlab = "Volume", binwidth=10e4)
 
 In fact, if we look at the min and max volumes calculated this way:
 
-```{r}
+```{r min_max, warning=FALSE,message=FALSE}
 c(min(actual_df$Volume), max(actual_df$Volume))
 ```
 
 It's different by a factor of nearly 10,000, which suggests an issue with that part of the data.  Much of it looks reasonable, however, and this analysis will look more at variables that seem to be reasonably-valued.
 
 First, a look at torque versus highway MPG:
-```{r}
+```{r Fuel, warning=FALSE,message=FALSE}
 p <- ggplot(data = actual_df)
 
 # highway mpg vs torque, colored by fuel type - limits are because of one outlier
@@ -142,21 +142,21 @@ p + geom_point(aes(x=`Fuel Information.Highway mpg`, y=`Engine Information.Engin
 
 There are a couple of rough trends that can be pulled out.  The biggest is probably the boost in higheay MPG as the torque levels fall - the highest amounts of torque correspond to under 20 MPG while the lowest torque levels are more around 35 MPG.  The other is that the cars configured to run on E85 (an 85% ethanol fuel blend) have somewhat worse mileage than their gasoline counterparts.  Breaking this down on just fuel type versus year:
 
-```{r}
+```{r fule_year, warning=FALSE,message=FALSE}
 knitr::kable(table(actual_df$`Fuel Information.Fuel Type`, actual_df$`Identification.Year`))
 ```
 
 As you'd expect from the previous plot, the models were dominated by pure-gasoline engines, with a decently large number of E85 models as well.  There are a few diesel and even a pair of compressed natural gas models (the two of these are the 2010 and 2011 Honda Civic).
 
 Looking at the breakdown of hybrid vs non-hybrid mileage (this being the start of the 2010s, electric cars aren't around), the highway mileage isn't particularly different:
-```{r}
+```{r highway_mpg, warning=FALSE,message=FALSE}
 p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.Highway mpg`)) + 
     ylim(0,50) + xlab("Hybrid") + ylab("Highway MPG")
 ```
 
 However, hybrid vehicles generally have better mileage at city speeds; looking at those mileages:
 
-```{r}
+```{r city_mpg, warning=FALSE,message=FALSE}
 # I'm pretty sure "City mph" is a typo, especially given that it's under "Fuel Information"
 p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.City mph`)) + 
     ylim(0,50) + xlab("Hybrid") + ylab("City MPG")
@@ -166,7 +166,7 @@ The median for the city mileage is quite a bit better than the one for the non-h
 
 Finally, looking at manual vs automatic transmissions each year:
 
-```{r}
+```{r transmission1, warning=FALSE,message=FALSE}
 # count of transmission types per year
 p + geom_bar(aes(x=`Identification.Year`, fill=as.factor(`Identification.Classification`)),
              stat="count", position="dodge") +
@@ -175,7 +175,7 @@ p + geom_bar(aes(x=`Identification.Year`, fill=as.factor(`Identification.Classif
 
 They seem similar proportionally, although it's hard to tell in the 2009 case since that data looks incomplete.
 
-```{r}
+```{r function, warning=FALSE,message=FALSE}
 numeric_summary <- function(df, transmission = "Manual transmission"){
     is_transmission_type <- transmission == df %>% select(Identification.Classification)
     vec <- df[is_transmission_type,]$`Engine Information.Engine Statistics.Horsepower`
