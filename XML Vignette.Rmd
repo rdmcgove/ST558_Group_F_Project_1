@@ -215,7 +215,7 @@ Similar to the upward trend in average life expectancy rates, the mortality rate
 ```{r mortalityGraphs, echo=FALSE}
 
 #Faceted scatterplot chart
-ggplot(ds, aes(x=as.numeric(year), y=mortality)) + geom_point(aes(color=race)) + facet_grid(~sex) + labs(x="Decade", y="Mortality Rate (deaths per 100,000)", color="", title="Mortality Rates by Sex and Race, 1900-2015") + scale_x_continuous(breaks = c(1900,1940,1980,2020)) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggplot(ds, aes(x=as.numeric(year), y=mortality)) + geom_point(aes(color=race)) + facet_grid(~sex) + labs(x="Decade", y="Mortality Rate (deaths per 100,000)", color="", title="Mortality Rates by Sex and Race, 1900-2015") + scale_x_continuous(breaks = c(1900,1940,1980,2020)) + theme(legend.position="right", axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
