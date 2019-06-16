@@ -82,7 +82,7 @@ Two other packages `RJSONIO` and `jsonlite` were introduced to R community since
 For this vignette, we'll use `jsonlite` for the above comparison. More usage about `jsonlite` could be found at the CRAN page and documentation [here](https://cran.r-project.org/web/packages/jsonlite/index.html)).
 
 # The Data
-The dataset used is taken from the [CORGIS (Collection of Really Great, Interesting, Situated Datasets) project](https://think.cs.vt.edu/corgis/), a collection of moderately sized datasets intended for experimentation and learning how to handle data operations.
+The dataset used is taken from the [CORGIS (Collection of Really Great, Interesting, Situated Datasets) project](https://think.cs.vt.edu/corgis/), a collection of moderately sized datasets intended for experimentation and learning how to handle data operations. It is about cars and how much fuel they use. Four types of information were included: "Engine Information", "Identification", "Dimensions", "Fuel Information".
 
 The specific dataset can be found [here](https://think.cs.vt.edu/corgis/json/cars/cars.html).
 
