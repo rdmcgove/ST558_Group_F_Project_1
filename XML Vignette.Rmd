@@ -48,11 +48,11 @@ Using the XML package we use only 3 functions: xmlParse, xmlRoot, and xmlToDataF
 
 For this vignette we will use a dataset consisting of mortality rates and life expectancy rates at birth by race and sex in the U.S. from 1900 to 2015. This data set is publicly available from the [CDC](https://data.cdc.gov/NCHS/NCHS-Death-rates-and-life-expectancy-at-birth/w9j2-ggv5).  
 
-This dataset consists of 1044 observations with 5 variables: year, race, sex, mortality, and average_life_expectancy. The dataset is in "long" form. Year, race, and sex are the groupings which contain values for mortality rates and average life expectancy rates. Year is inclusive of every year from 1900 to 2015. Race is a categorical variable consisting of: All Races, Black, and White. Although it is not explicit in CDC's description of the data, we presume that the All Races category is Black and White combined. Sex is a categorical variable consisting of: Both Sexes, Female, and Male. Mortality rate (mortality), or age-adjusted death rates is a numerical variable representing the number deaths per 100,000. The link above describes in detail how mortality rates are calculated for various historical periods. Life expectancy rate (average_life_expectancy) is a numerical variable denominated in years. Per [CDC](https://www.cdc.gov/nchs/nvss/mortality/hist293.htm.), life expectancy data are available up to 2014 and are not consistently available for the black population before 1968. The average_life_expectancy variable is the only one which contains NAs.
+This dataset consists of 1,044 observations with 5 variables relating to: year, race, sex, mortality, and average life expectancy. The dataset is in "long" form. Year, race, and sex are the groupings which contain values for mortality rates and average life expectancy rates. Year is inclusive of every year from 1900 to 2015. Race is a categorical variable consisting of: All Races, Black, and White. Although it is not explicit in CDC's description of the data, we presume that the All Races category is Black and White combined. Sex is a categorical variable consisting of: Both Sexes, Female, and Male. Mortality rate (mortality), or age-adjusted death rates is a numerical variable representing the number deaths per 100,000. The link above describes in detail how mortality rates are calculated for various historical periods. Life expectancy rate (average_life_expectancy) is a numerical variable denominated in years. Per [CDC](https://www.cdc.gov/nchs/nvss/mortality/hist293.htm.), life expectancy data are available up to 2014 and are not consistently available for the black population before 1968. The average life expectancy variable is the only one which contains NAs.
 
 The first contingency table below displays the number of observations for each numerical variable grouped by the race and sex. This shows that for average life expectancy, each group is missing one observation. The second contingency table confirms that the missing data is for 2015.
 
-```{r contingency tables}
+```{r contingency tables, echo=FALSE}
 
 #Add 2 variables to check for the presence of NA values for the numerical variables
 ds2 <- ds %>% mutate(mortality_yn = ifelse(is.na(mortality),0,1), ale_yn = ifelse(is.na(average_life_expectancy),0,1))
@@ -69,8 +69,6 @@ knitr::kable(table1, col.names = c("Race", "Sex", "Mortality (n)","Life Expectan
 knitr::kable(table2, col.names = c("Year","Mortality (n)","Life Expectancy (n)"), caption = "Count of Mortality and Life Expectancy observations by Year")
 
 ```
-
-
 
 # Life expectancy
 
