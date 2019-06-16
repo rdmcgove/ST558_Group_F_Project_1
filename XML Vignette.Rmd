@@ -3,6 +3,10 @@ title: "XML Vignette"
 author: "Ryan McGovern and Steve Sortijas"
 date: "June 6, 2019"
 output: rmarkdown::github_document
+  html_document:
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
 ---
 
 ```{r ImportDeathData, include=FALSE}
@@ -64,9 +68,9 @@ table1 <- ds %>% filter(mortality_yn == 1 | ale_yn == 1) %>% group_by(race, sex)
 table2 <- ds %>% filter(ale_yn == 0) %>% group_by(year) %>% summarise(mortN = sum(mortality_yn), aleN = sum(ale_yn))
 
 #Display tables, change column names
-knitr::kable(table1, col.names = c("Race", "Sex", "Mortality (n)","Life Expectancy (n)"), caption = "Count of Mortality and Life Expectancy observations by Group")
+knitr::kable(table1, col.names = c("Race", "Sex", "Mortality (n)","Life Expectancy (n)"), caption = "Count of Mortality and Life Expectancy Observations by Group")
 
-knitr::kable(table2, col.names = c("Year","Mortality (n)","Life Expectancy (n)"), caption = "Count of Mortality and Life Expectancy observations by Year")
+knitr::kable(table2, col.names = c("Year","Mortality (n)","Life Expectancy (n)"), caption = "Count of Mortality and Life Expectancy Observations by Year")
 
 ```
 
@@ -76,11 +80,11 @@ knitr::kable(table2, col.names = c("Year","Mortality (n)","Life Expectancy (n)")
 
 First we will explore the average life expectancy data. To help simplify our analysis, we will create a new variable called "decade" in order to group the years into their respective decades. We will then use this grouping to compare change in the numerical variables over time. 
 
-As discussed previously, we interpret the categorical value of "All Races" in the "race" variable to mean "black" and "white" combined. So for this first table, we will use only the "All Races" observations to show the average life expectancy rates by decade. This table is grouped by sex to highlight the different life expectancy rates between sexes. The bottommost row of the table summarizes the differences in life expectancy rates between male and female during each decade.
+As discussed previously, we interpret the categorical value of "All Races" in the "race" variable to mean "black" and "white" combined. So for this first table, we will use only the "All Races" observations to show the average life expectancy rates by decade. This table is grouped by sex to highlight the different life expectancy rates between sexes. The bottom row of the table summarizes the differences in life expectancy rates between males and females during each decade.
+
+Looking at this fluctuation its worth considering external influences. Though outside the scope of this assignment it would be interesting to incorporate what years there was a major conflict occuring with US involvement. Could the spread in the 1970s be becase of the Vietnam war and the following years due to veterans returning with injuries? Did the same things cause the spreads increasing between Males an Females in the 40s and to some extent the 1990s? OR were there other gender specific public events that create this spread? 
 
 ```{r tables, echo=FALSE}
-#after making the plots i think a good chart would be the DIFFERFENCE in avg life expectancy by gender and decade
-
 #Average life expectancy by decade, filtered by "All races", "Female", and "Male"
 avgALEDecade <- ds %>% filter(race=="All Races" & sex %in% c("Female","Male")) %>% group_by(sex,decade) %>% summarise(avgALE = mean(average_life_expectancy, na.rm=TRUE))
 
@@ -93,7 +97,7 @@ avgALESexDiff <- bind_rows(avgALESex,avgALESex[avgALESex$sex=="Female",2:13]-avg
 #add a value for difference
 avgALESexDiff[3,1] <- 'Difference'
 
-knitr::kable(avgALESexDiff, caption = "Average life expectancy by sex by decade", col.names = c("","1900","1910","1920","1930","1940","1950","1960","1970","1980","1990","2000","2010"))
+knitr::kable(avgALESexDiff, caption = "Average Life Expectancy by Sex by Decade", col.names = c("","1900","1910","1920","1930","1940","1950","1960","1970","1980","1990","2000","2010"))
 
 ```
 
@@ -122,23 +126,23 @@ return(avgALESexDiff)
 }
 ```
 
-## Average Life Expectency by Gender and Decade broken out by Race
+## Average Life Expectency by Gender and Decade Broken Out by Race
 
 When analyzed by race, the life expectancy trends seen above hold true: the life expectancy gap between females and males grows from 1900 to 1970 and then begins decreasing. What is noticeable in this analysis is the gap in life expectancy between black and white populations, particularly in the early 1900s. The average life expectancy is greater than 15 years for whites (both male and female) compared with blacks. However, over the years life expectancy gap between blacks and whites narrows considerably. In 2010 the life expectancy gap between races is reduced to nearly 4 years for both sexes. (Let's use the last table to summarize the differences by race)
 
 ```{r dd race call, echo=FALSE}
 #call the function for each race 
 Black <- DD_Race('Black')
-knitr::kable(Black, caption ='Average life expectancy by sex by decade: Black')
+knitr::kable(Black, caption ='Average Life Expectancy by Sex and Decade: Black')
 Black[3,1] = 'Black'
 
 White <-DD_Race('White')
-knitr::kable(White, caption ='Average life expectancy by sex by decade: White')
+knitr::kable(White, caption ='Average life expectancy by Sex and Decade: White')
 White[3,1] = 'White'
 
 all_races <-DD_Race('All Races')
 #commented out as this is duplicative
-#knitr::kable(all_races, caption ='Average life expectancy by sex by decade: All Races')
+#knitr::kable(all_races, caption ='Average life expectancy by Sex and Decade: All Races')
 all_races[3,1] = 'All Races'
 
 #create a table of the differences of gender by rate
@@ -150,12 +154,12 @@ knitr::kable(gender_race_spread, caption = 'Spread of Life Expectancy by Race')
 
 ```
 
-### Visuals
+## Visuals
 
 The first plot looks at average life expectancy by sex for each decade of the dataset. This grouped bar graph demonstrates the trend towards higher life expectancy for both sexes as well as the persistent gap between male and female life expectancy, which widens and appears to currently be in a narrowing phase.
 
 ```{r AvgLifeExpByDecade Chart, echo=FALSE}
-#Question about calculations: does "all races" category mean black and white combined? If so, then should we just use the "all races" data for the 2 graphs below where race is not part of the visualization?
+#assuming the "all races" category means black and white combined then  we just use the "all races" data for the 2 graphs below where race is not part of the visualization?
 
 #calculate the average life exp by decade and gender
 chart_1_Data <- ds %>% filter(sex %in% 
@@ -203,7 +207,7 @@ g + geom_line(aes(group=Race,linetype = Race )) +  ggtitle("Difference in Averag
 
 ```
 
-# Mortality rates
+## Mortality rates
 
 Similar to the upward trend in average life expectancy rates, the mortality rates for males and females in all racial categories has considerably decreased over time. As you can see from the faceted scatterplot below, mortality rates for blacks were considerably higher than whites from 1900 to the 1930s. Since the 1940s, although mortality rates for blacks of both sexes remained persistently higher than for whites, the difference is considerably less.   
 
