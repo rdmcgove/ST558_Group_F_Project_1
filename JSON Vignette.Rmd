@@ -5,7 +5,9 @@ date: "June 14, 2019"
 output:
     html_document:
         toc: yes
-        toc_float: no
+        toc_float: yes
+        number_sections: true
+        toc_depth: 3
 ---
 
 ```{r setup, include=FALSE}
@@ -81,16 +83,16 @@ Two other packages `RJSONIO` and `jsonlite` were introduced to R community since
 For this vignette, we'll use `jsonlite` for the above comparison. More usage about `jsonlite` could be found at the CRAN page and documentation [here](https://cran.r-project.org/web/packages/jsonlite/index.html)).
 
 # Working with JSON data in R
-## The Data
+## About the used JSON file 
 The dataset used is taken from the [CORGIS (Collection of Really Great, Interesting, Situated Datasets) project](https://think.cs.vt.edu/corgis/), a collection of moderately sized datasets intended for experimentation and learning how to handle data operations. It is about cars and how much fuel they use. Four types of information were included: "Engine Information", "Identification", "Dimensions", "Fuel Information".
 
 The specific dataset can be found [here](https://think.cs.vt.edu/corgis/json/cars/cars.html).
 
-## Reading online JSON File
+## Parse JSON file to a R object
 Reading in a file is fairly simple:
 ```{r parse, warning=FALSE,message=FALSE}
-library(tidyverse)
-library(jsonlite)
+library(tidyverse) 
+library(jsonlite) 
 json_data <- fromJSON("https://think.cs.vt.edu/corgis/json/cars/cars.json")
 class(json_data)
 ```
