@@ -14,8 +14,28 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction to JSON
 
-JSON (JavaScript Object Notation) is a plain-text data file format.  It was originally intended for use with JavaScript, as the full name implies, as it's structured to store attribute-value pairs.  As a result, it can be used to store data records containing nested and potentially complicated item fields.
+JSON (JavaScript Object Notation) is a plain-text data file format.  It was originally intended for use with JavaScript, as the full name implies, as it's structured to store attribute-value pairs.  As a result, it can be used to store data records containing nested and potentially complicated item fields. It is easy for humans to read and write. It is easy for machines to parse and generate. JSON is a text format that is completely language independent but uses conventions that are familiar to programmers of the C-family of languages, including C, C++, C#, Java, JavaScript, Perl, Python, and many others. These properties make JSON an ideal data-interchange language. [[Ref](https://www.json.org/)]  
 
+JSON is built on two parts:keys and values. Together they make a key/value pair.   
+   
+Key: A key is always a string enclosed in quotation marks.  
+Value: A value can be a string, number, boolean expression, array, or object.  
+   
+A key value pair follows a specific syntax, with the key followed by a colon followed by the value. Key/value pairs are comma separated.[[Ref](https://developers.squarespace.com/what-is-json)]    
+    
+In JSON, values must be one of the following data types:   
+a string  
+a number   
+an object (JSON object)   
+an array  
+a boolean   
+null    
+
+JSON values cannot be one of the following data types:    
+   
+a function   
+a date  
+undefined      [[Ref](https://www.w3schools.com/js/js_json_datatypes.asp)] 
 An example from the data we'll be using later:
 
 ````
