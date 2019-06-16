@@ -10,7 +10,7 @@ output:
         toc_depth: 3
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -115,8 +115,9 @@ actual_df
 This returns a data frame that can be handled conventionally by R functions.
 
 
-## Exploratory analyses
-It should be noted that there are some peculiarities in the data.  For instance, documentation does not give units for the dimensions, and they don't all seem to be on the same scale:
+## Exploratory analysis
+It should be noted that there are some peculiarities in the data.  For instance, documentation does not give units for the dimensions, and they don't all seem to be on the same scale:   
+   
 ```{r new_variable, warning=FALSE,message=FALSE, echo=FALSE}
 actual_df$Volume = actual_df$Dimensions.Height * actual_df$Dimensions.Length * 
     actual_df$Dimensions.Width
@@ -152,17 +153,18 @@ knitr::kable(table(actual_df$`Fuel Information.Fuel Type`, actual_df$`Identifica
 
 As you'd expect from the previous plot, the models were dominated by pure-gasoline engines, with a decently large number of E85 models as well.  There are a few diesel and even a pair of compressed natural gas models (the two of these are the 2010 and 2011 Honda Civic).
 
-Looking at the breakdown of hybrid vs non-hybrid mileage (this being the start of the 2010s, electric cars aren't around), the highway mileage isn't particularly different:
+Looking at the breakdown of hybrid vs non-hybrid mileage (this being the start of the 2010s, electric cars aren't around), the highway mileage isn't particularly different:  
+   
 ```{r plot_highway_mpg_hybrid, warning=FALSE,message=FALSE, echo=FALSE}
 p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.Highway mpg`)) + 
     ylim(0,50) + xlab("Engine type") + ylab("Highway MPG") +
-  labs(title="Boxplot of Highway mpg by Engine type (Hybrid vs. Non-Hybrid") +
+  labs(title="Boxplot of Highway mpg by Engine type (Hybrid vs. Non-Hybrid)") +
   theme(plot.title = element_text(size = 12, face = "bold")) + 
   scale_x_discrete(labels = c("Non-hybrid","Hybrid"))
 ```
-
-However, hybrid vehicles generally have better mileage at city speeds; looking at those mileages:
-
+   
+However, hybrid vehicles generally have better mileage at city speeds; looking at those mileages:   
+   
 ```{r city_mpg, warning=FALSE,message=FALSE, echo=FALSE}
 # I'm pretty sure "City mph" is a typo, especially given that it's under "Fuel Information"
 p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.City mph`)) + 
@@ -174,8 +176,8 @@ p + geom_boxplot(aes(x=`Engine Information.Hybrid`, y=`Fuel Information.City mph
 
 The median for the city mileage is quite a bit better than the one for the non-hybrid vehicle.
 
-Finally, looking at manual vs automatic transmissions each year:
-
+Finally, looking at manual vs automatic transmissions each year:   
+   
 ```{r transmission1, warning=FALSE,message=FALSE, echo=FALSE}
 # count of transmission types per year
 p + geom_bar(aes(x=`Identification.Year`, fill=as.factor(`Identification.Classification`)),
@@ -183,9 +185,9 @@ p + geom_bar(aes(x=`Identification.Year`, fill=as.factor(`Identification.Classif
     guides(fill=guide_legend(title="Transmission")) + xlab("Year")  + labs(caption="Distribution of transmission type by years") +
   theme(plot.caption = element_text(size = 12, face = "bold")) 
 ```
-
-They seem similar proportionally, although it's hard to tell in the 2009 case since that data looks incomplete.
-
+   
+They seem similar proportionally, although it's hard to tell in the 2009 case since that data looks incomplete.   
+   
 ```{r function, warning=FALSE,message=FALSE,echo=FALSE}
 numeric_summary <- function(df, transmission = "Manual transmission"){
     is_transmission_type <- transmission == df %>% select(Identification.Classification)
@@ -199,5 +201,5 @@ hp_by_tm <- cbind(numeric_summary(actual_df, "Manual transmission"),
 knitr::kable(as.data.frame(hp_by_tm, row.names = c("Min","25%","50%","Mean","75%","Max", "Count")),
              col.names=c("Manual","Automatic"), caption = "Summry of horsepower by different transmissions")
 ```
-
+   
 It looks like the automatic transmissions tend to have somewhat more horsepower than the manual ones.
